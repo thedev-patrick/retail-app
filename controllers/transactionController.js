@@ -1,4 +1,5 @@
 const transactions = {};
+const customers = {};
 const dataStore = require('../datastore');
 const { v4: uuidv4 } = require('uuid');
 exports.verifyTransaction = (req, res) => {
