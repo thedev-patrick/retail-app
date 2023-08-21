@@ -11,12 +11,12 @@ app.use(bodyParser.json());
 // Routes
 app.use('/customers', require('./routes/customerRoutes'));
 app.use('/transactions', require('./routes/transactionRoutes'));
-app.get('/generate-qrcode/:transactionId', async (req, res) => {
+app.get('/generate-qrcode/:transaction_ref', async (req, res) => {
     try {
-        const { transactionId } = req.params;
+        const { transaction_ref } = req.params;
        
         // Fetch transaction details from dataStore or wherever you store it
-        const transactionDetails = dataStore.getTransaction(transactionId);
+        const transactionDetails = dataStore.getTransaction(transaction_ref);
         if (!transactionDetails) {
             return res.status(404).json({ status: 'error', message: 'Transaction not found' });
         }
