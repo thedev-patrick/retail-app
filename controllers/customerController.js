@@ -14,7 +14,7 @@ exports.createCustomer = (req, res) => {
     const customer_name = "Abdul Sam";
     const created_at = "28-05-2023";
 
-    customers[customer_id] = { customer_name, created_at };
+    const customerData = { customer_name, created_at };
 
     dataStore.addCustomer(customer_id, customerData);
 
