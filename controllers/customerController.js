@@ -1,4 +1,5 @@
 const customers = {};
+const uuid = require('uuid').v4;
 
 exports.createCustomer = (req, res) => {
     const { mobile_no, nin } = req.body;

@@ -1,4 +1,5 @@
 const transactions = {};
+const uuid = require('uuid').v4;
 
 exports.verifyTransaction = (req, res) => {
     const { customer_id } = req.body;
