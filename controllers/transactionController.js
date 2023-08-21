@@ -51,7 +51,7 @@ exports.createTransaction = (req, res) => {
 };
 
 
-exports.generateQRCode = (req, res) => {
+exports.generateQRCode = async (req, res) => {
     const { customer_id, payment_reference, product, quantity, amount } = req.body;
 
     // Validation checks
@@ -63,11 +63,19 @@ exports.generateQRCode = (req, res) => {
     if (!dataStore.getCustomer(customer_id) || !dataStore.getTransaction(payment_reference)) {
         return res.status(404).json({ status: 'error', message: 'Customer or transaction not found' });
     }
-    // Generate a unique transaction ID
-    const transactionId = uuidv4();
+    const transactionId = dataStore.getTransaction(transactionId)
 
-    // In a real application, you would generate a QR code image and store it.
-    const qrCodeUrl = `https://example.com/qrcodes/${transactionId}.png`;
+    // Fetch transaction details from dataStore or wherever you store it
+    const transactionDetails = dataStore.getTransaction(transactionId);
+    if (!transactionDetails) {
+        return res.status(404).json({ status: 'error', message: 'Transaction not found' });
+    }
+
+
+    const qrCodeText = JSON.stringify(transactionDetails);
+
+    // Generate QR code
+    const qrCodeUrl = await QRCode.toDataURL(qrCodeText);
 
     res.status(200).json({
         status: 'success',
