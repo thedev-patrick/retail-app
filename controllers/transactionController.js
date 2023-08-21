@@ -63,7 +63,7 @@ exports.generateQRCode = async (req, res) => {
     if (!dataStore.getCustomer(customer_id) || !dataStore.getTransaction(payment_reference)) {
         return res.status(404).json({ status: 'error', message: 'Customer or transaction not found' });
     }
-    const transactionId = dataStore.getTransaction(transactionId)
+    const transactionId = uuidv4();
 
     // Fetch transaction details from dataStore or wherever you store it
     const transactionDetails = dataStore.getTransaction(transactionId);
