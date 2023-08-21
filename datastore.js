@@ -1,18 +1,25 @@
 module.exports = {
     customers: {},
-    addCustomer: function (customerId, customerData) {
-        this.customers[customerId] = customerData;
+    transactions: {}, // Initialize the transactions object
+    addCustomer: function(customerId, customerData) {
+      this.customers[customerId] = customerData;
     },
-    getCustomer: function (customerId) {
-        return this.customers[customerId];
+    getCustomer: function(customerId) {
+      return this.customers[customerId];
     },
-    addTransaction: function (transactionId, transactionData) {
-        this.transactions[transactionId] = transactionData;
+    addTransaction: function(transactionId, transactionData) {
+      // Make sure transactions[transactionId] is properly initialized
+      if (!this.transactions[transactionId]) {
+        this.transactions[transactionId] = {};
+      }
+  
+      Object.assign(this.transactions[transactionId], transactionData);
     },
-    getTransaction: function (transactionId) {
-        return this.transactions[transactionId];
+    getTransaction: function(transactionId) {
+      return this.transactions[transactionId];
     },
-    getTransactions: function () {
-        return this.transactions;
+    getTransactions: function() {
+      return this.transactions;
     },
-};
+  };
+  
