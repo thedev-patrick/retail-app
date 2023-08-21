@@ -1,5 +1,5 @@
 const customers = {};
-const uuid = require('uuid').v4;
+const { v4: uuidv4 } = require('uuid');
 
 exports.createCustomer = (req, res) => {
     const { mobile_no, nin } = req.body;
@@ -10,7 +10,7 @@ exports.createCustomer = (req, res) => {
     }
 
     // Generate customer_id, customer_name, and created_at
-    const customer_id = `PL${uuid()}`; // Generate a unique ID
+    const customer_id = `PL${uuidv4()}`; // Generate a unique ID
     const customer_name = "Abdul Sam";
     const created_at = "28-05-2023";
 

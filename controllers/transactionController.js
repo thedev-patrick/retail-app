@@ -1,6 +1,5 @@
 const transactions = {};
-const uuid = require('uuid').v4;
-
+const { v4: uuidv4 } = require('uuid');
 exports.verifyTransaction = (req, res) => {
     const { customer_id } = req.body;
 
@@ -31,7 +30,7 @@ exports.createTransaction = (req, res) => {
     }
 
     // Generate transaction_ref, price, discount, and final_price (simplified for this example)
-    const transaction_ref = uuid(); // Generate a unique transaction reference
+    const transaction_ref = uuidv4(); // Generate a unique transaction reference
     const price = 3500; // Price per unit
     const discount = 2; // Discount percentage
     const final_price = price * quantity * ((100 - discount) / 100);
@@ -61,7 +60,7 @@ exports.generateQRCode = (req, res) => {
     }
 
     // Generate a unique transaction ID
-    const transactionId = uuid();
+    const transactionId = uuidv4();
 
     // In a real application, you would generate a QR code image and store it.
     const qrCodeUrl = `https://example.com/qrcodes/${transactionId}.png`;
