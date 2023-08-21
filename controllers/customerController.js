@@ -1,4 +1,4 @@
-const customers = {};
+const dataStore = require('../datastore');
 const { v4: uuidv4 } = require('uuid');
 
 exports.createCustomer = (req, res) => {
@@ -15,6 +15,8 @@ exports.createCustomer = (req, res) => {
     const created_at = "28-05-2023";
 
     customers[customer_id] = { customer_name, created_at };
+
+    dataStore.addCustomer(customer_id, customerData);
 
     res.status(201).json({ customer_id, customer_name, created_at });
 };

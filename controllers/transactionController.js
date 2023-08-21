@@ -1,4 +1,5 @@
 const transactions = {};
+const dataStore = require('../datastore');
 const { v4: uuidv4 } = require('uuid');
 exports.verifyTransaction = (req, res) => {
     const { customer_id } = req.body;
@@ -9,7 +10,9 @@ exports.verifyTransaction = (req, res) => {
     }
 
     // Check if the customer_id exists
-    if (!customers[customer_id]) {
+    const customerData = dataStore.getCustomer(customer_id);
+
+    if (!customerData) {
         return res.status(404).json({ status: 'error', message: 'Customer not found' });
     }
 
@@ -35,16 +38,17 @@ exports.createTransaction = (req, res) => {
     const discount = 2; // Discount percentage
     const final_price = price * quantity * ((100 - discount) / 100);
 
-    transactions[transaction_ref] = {
+    dataStore.addTransaction(transaction_ref, {
         customer_id,
         transaction_ref,
         price,
         discount,
         final_price,
-    };
+    });
 
-    res.status(200).json({ status: '200', transaction_ref, ...transactions[transaction_ref] });
+    res.status(200).json({ status: '200', transaction_ref, ...dataStore.getTransactions()[transaction_ref] });
 };
+
 
 exports.generateQRCode = (req, res) => {
     const { customer_id, payment_reference, product, quantity, amount } = req.body;
@@ -55,10 +59,9 @@ exports.generateQRCode = (req, res) => {
     }
 
     // Check if the customer_id and payment_reference exist
-    if (!customers[customer_id] || !transactions[payment_reference]) {
+    if (!dataStore.getCustomer(customer_id) || !dataStore.getTransaction(payment_reference)) {
         return res.status(404).json({ status: 'error', message: 'Customer or transaction not found' });
     }
-
     // Generate a unique transaction ID
     const transactionId = uuidv4();
 
