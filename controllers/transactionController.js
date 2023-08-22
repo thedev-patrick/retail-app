@@ -1,4 +1,5 @@
 const customers = {};
+const { log } = require('console');
 const dataStore = require('../datastore');
 const QRCode = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
@@ -12,7 +13,7 @@ exports.verifyTransaction = (req, res) => {
 
     // Check if the customer_id exists
     const customerData = dataStore.getCustomer(customer_id);
-
+    console.log(customerData);
     if (!customerData) {
         return res.status(404).json({ status: 'error', message: 'Customer not found' });
     }
