@@ -1,5 +1,7 @@
 const dataStore = require('../datastore');
+const { faker } = require('@faker-js/faker');
 const { v4: uuidv4 } = require('uuid');
+const customers = {};
 
 exports.createCustomer = (req, res) => {
     const { mobile_no, nin } = req.body;
@@ -11,8 +13,8 @@ exports.createCustomer = (req, res) => {
 
     // Generate customer_id, customer_name, and created_at
     const customer_id = `PL${uuidv4()}`; // Generate a unique ID
-    const customer_name = "Abdul Sam";
-    const created_at = "28-05-2023";
+    const customer_name = faker.person.fullName(); 
+    const created_at = new Date();
 
     const customerData = { customer_name, created_at };
 
