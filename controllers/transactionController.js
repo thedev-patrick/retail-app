@@ -1,6 +1,6 @@
-const transactions = {};
 const customers = {};
 const dataStore = require('../datastore');
+const QRCode = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
 exports.verifyTransaction = (req, res) => {
     const { customer_id } = req.body;
@@ -12,13 +12,14 @@ exports.verifyTransaction = (req, res) => {
 
     // Check if the customer_id exists
     const customerData = dataStore.getCustomer(customer_id);
+    console.log(customerData)
 
     if (!customerData) {
         return res.status(404).json({ status: 'error', message: 'Customer not found' });
     }
 
     // Process verification
-    const customerInfo = customers[customer_id];
+    const customerInfo = dataStore.getCustomer(customer_id);
     const status = "200";
     const message = "Successfully verified";
 
@@ -52,8 +53,7 @@ exports.createTransaction = (req, res) => {
 
 
 exports.generateQRCode = async (req, res) => {
-    const { transaction_ref, customer_id, payment_reference, product, quantity, amount } = req.body;
-    console.log(`"id" : ${transaction_ref}`);
+    const {customer_id, payment_reference, product, quantity, amount } = req.body;
 
 
     // Validation checks
@@ -68,21 +68,22 @@ exports.generateQRCode = async (req, res) => {
 
 
     // Fetch transaction details from dataStore or wherever you store it
-    const transactionDetails = dataStore.getTransaction(transaction_ref);
+    const transactionDetails = dataStore.getTransaction(payment_reference);
+    console.log(`"id" : ${payment_reference}`);
+
     if (!transactionDetails) {
         return res.status(404).json({ status: 'error', message: 'Transaction not found' });
     }
 
 
     const qrCodeText = JSON.stringify(transactionDetails);
-    console.log(`"details" : ${transactionDetails}`);
-    console.log(`"id" : ${transactionId}`);
+
     // Generate QR code
     const qrCodeUrl = await QRCode.toDataURL(qrCodeText);
 
     res.status(200).json({
         status: 'success',
         message: 'QR code receipt generated successfully',
-        data: { transaction_ref, amount, qrCodeUrl },
+        data: { payment_reference, amount, qrCodeUrl },
     });
 };
