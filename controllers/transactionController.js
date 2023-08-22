@@ -12,7 +12,6 @@ exports.verifyTransaction = (req, res) => {
 
     // Check if the customer_id exists
     const customerData = dataStore.getCustomer(customer_id);
-    console.log(customerData)
 
     if (!customerData) {
         return res.status(404).json({ status: 'error', message: 'Customer not found' });
@@ -69,7 +68,6 @@ exports.generateQRCode = async (req, res) => {
 
     // Fetch transaction details from dataStore or wherever you store it
     const transactionDetails = dataStore.getTransaction(payment_reference);
-    console.log(`"id" : ${payment_reference}`);
 
     if (!transactionDetails) {
         return res.status(404).json({ status: 'error', message: 'Transaction not found' });
