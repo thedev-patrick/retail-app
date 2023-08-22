@@ -52,7 +52,9 @@ exports.createTransaction = (req, res) => {
 
 
 exports.generateQRCode = async (req, res) => {
-    const { transactionId, customer_id, payment_reference, product, quantity, amount } = req.body;
+    const { transaction_ref, customer_id, payment_reference, product, quantity, amount } = req.body;
+    console.log(`"id" : ${transaction_ref}`);
+
 
     // Validation checks
     if (!customer_id || !payment_reference || !product || !quantity || !amount) {
@@ -66,20 +68,21 @@ exports.generateQRCode = async (req, res) => {
 
 
     // Fetch transaction details from dataStore or wherever you store it
-    const transactionDetails = dataStore.getTransaction(transactionId);
+    const transactionDetails = dataStore.getTransaction(transaction_ref);
     if (!transactionDetails) {
         return res.status(404).json({ status: 'error', message: 'Transaction not found' });
     }
 
 
     const qrCodeText = JSON.stringify(transactionDetails);
-
+    console.log(`"details" : ${transactionDetails}`);
+    console.log(`"id" : ${transactionId}`);
     // Generate QR code
     const qrCodeUrl = await QRCode.toDataURL(qrCodeText);
 
     res.status(200).json({
         status: 'success',
         message: 'QR code receipt generated successfully',
-        data: { transactionId, amount, qrCodeUrl },
+        data: { transaction_ref, amount, qrCodeUrl },
     });
 };
