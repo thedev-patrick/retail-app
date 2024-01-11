@@ -1,9 +1,9 @@
-const customers = {};
 const { log } = require('console');
-const dataStore = require('../datastore');
+const db = require('../db');
 const QRCode = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
-exports.verifyTransaction = (req, res) => {
+
+exports.verifyTransaction = async (req, res) => {
     const { customer_id } = req.body;
 
     // Validation checks
@@ -11,22 +11,23 @@ exports.verifyTransaction = (req, res) => {
         return res.status(400).json({ status: 'error', message: 'Customer ID is required' });
     }
 
-    // Check if the customer_id exists
-    const customerData = dataStore.getCustomer(customer_id);
-    console.log(customerData);
-    if (!customerData) {
-        return res.status(404).json({ status: 'error', message: 'Customer not found' });
+    try {
+        // Check if the customer_id exists in the database
+        const [customerData] = await db.query('SELECT * FROM customers WHERE customer_id = ?', [customer_id]);
+
+        if (!customerData.length) {
+            return res.status(404).json({ status: 'error', message: 'Customer not found' });
+        }
+
+        // Process verification
+        res.status(200).json({ status: '200', message: 'Successfully verified', ...customerData[0] });
+    } catch (error) {
+        console.error('Error verifying transaction:', error);
+        res.status(500).json({ status: 'error', message: 'Internal server error' });
     }
-
-    // Process verification
-    const customerInfo = dataStore.getCustomer(customer_id);
-    const status = "200";
-    const message = "Successfully verified";
-
-    res.status(200).json({ status, message, ...customerInfo });
 };
 
-exports.createTransaction = (req, res) => {
+exports.createTransaction = async (req, res) => {
     const { customer_id, company, product, quantity, state, lga, location_code } = req.body;
 
     // Validation checks
@@ -34,55 +35,75 @@ exports.createTransaction = (req, res) => {
         return res.status(400).json({ status: 'error', message: 'Invalid data provided' });
     }
 
-    // Generate transaction_ref, price, discount, and final_price (simplified for this example)
-    const transaction_ref = uuidv4(); // Generate a unique transaction reference
-    const price = 3500; // Price per unit
-    const discount = 2; // Discount percentage
-    const final_price = price * quantity * ((100 - discount) / 100);
+    try {
+        // Check if the customer_id exists in the database
+        const [customerData] = await db.query('SELECT * FROM customers WHERE customer_id = ?', [customer_id]);
 
-    dataStore.addTransaction(transaction_ref, {
-        customer_id,
-        transaction_ref,
-        price,
-        discount,
-        final_price,
-    });
+        if (!customerData.length) {
+            return res.status(404).json({ status: 'error', message: 'Customer not found' });
+        }
 
-    res.status(200).json({ status: '200', transaction_ref, ...dataStore.getTransactions()[transaction_ref] });
+        // Generate transaction_ref, price, discount, and final_price (simplified for this example)
+        const transaction_ref = uuidv4(); // Generate a unique transaction reference
+        const price = 3500; // Price per unit
+        const discount = 2; // Discount percentage
+        const final_price = price * quantity * ((100 - discount) / 100);
+        const created_at = new Date();
+
+        // Insert transaction data into the database
+        await db.query('INSERT INTO transactions (customer_id, transaction_ref, price, discount, final_price, created_at) VALUES (?, ?, ?, ?, ?, ?)', [
+            customer_id,
+            transaction_ref,
+            price,
+            discount,
+            final_price,
+            created_at
+        ]);
+
+        res.status(200).json({ status: '200', transaction_ref, ...req.body });
+    } catch (error) {
+        console.error('Error creating transaction:', error);
+        res.status(500).json({ status: 'error', message: 'Internal server error' });
+    }
 };
 
-
 exports.generateQRCode = async (req, res) => {
-    const {customer_id, payment_reference, product, quantity, amount } = req.body;
-
+    const { customer_id, payment_reference, product, quantity, amount } = req.body;
 
     // Validation checks
     if (!customer_id || !payment_reference || !product || !quantity || !amount) {
         return res.status(400).json({ status: 'error', message: 'Invalid data provided' });
     }
 
-    // Check if the customer_id and payment_reference exist
-    if (!dataStore.getCustomer(customer_id) || !dataStore.getTransaction(payment_reference)) {
-        return res.status(404).json({ status: 'error', message: 'Customer or transaction not found' });
+    try {
+        // Check if the customer_id and payment_reference exist in the database
+        const [customerData] = await db.query('SELECT * FROM customers WHERE customer_id = ?', [customer_id]);
+        const [transactionData] = await db.query('SELECT * FROM transactions WHERE transaction_ref = ?', [payment_reference]);
+
+        if (!customerData.length || !transactionData.length) {
+            return res.status(404).json({ status: 'error', message: 'Customer or transaction not found' });
+        }
+
+        const transactionDetails = {
+            customer_id,
+            payment_reference,
+            product,
+            quantity,
+            amount,
+        };
+
+        const qrCodeText = JSON.stringify(transactionDetails);
+
+        // Generate QR code
+        const qrCodeUrl = await QRCode.toDataURL(qrCodeText);
+
+        res.status(200).json({
+            status: 'success',
+            message: 'QR code receipt generated successfully',
+            data: { payment_reference, amount, qrCodeUrl },
+        });
+    } catch (error) {
+        console.error('Error generating QR code:', error);
+        res.status(500).json({ status: 'error', message: 'Internal server error' });
     }
-
-
-    // Fetch transaction details from dataStore or wherever you store it
-    const transactionDetails = dataStore.getTransaction(payment_reference);
-
-    if (!transactionDetails) {
-        return res.status(404).json({ status: 'error', message: 'Transaction not found' });
-    }
-
-
-    const qrCodeText = JSON.stringify(transactionDetails);
-
-    // Generate QR code
-    const qrCodeUrl = await QRCode.toDataURL(qrCodeText);
-
-    res.status(200).json({
-        status: 'success',
-        message: 'QR code receipt generated successfully',
-        data: { payment_reference, amount, qrCodeUrl },
-    });
 };
