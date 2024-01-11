@@ -57,3 +57,22 @@ exports.createCustomer = async (req, res) => {
     res.status(500).json({ status: "error", message: "Internal server error" });
   }
 };
+
+exports.getCustomers = async(req, res) => {
+   try {
+     // Retrieve all customers from the database
+     const allCustomers = await db.query("SELECT * FROM customers");
+
+     // Check if there are any customers
+     if (allCustomers[0].length > 0) {
+       res.status(200).json(allCustomers[0]);
+     } else {
+       res.status(404).json({ status: "error", message: "No customers found" });
+     }
+   } catch (error) {
+     console.error("Error retrieving customers from the database:", error);
+     res
+       .status(500)
+       .json({ status: "error", message: "Internal server error" });
+   }
+}
