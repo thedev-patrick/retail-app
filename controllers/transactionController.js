@@ -100,7 +100,7 @@ exports.createTransaction = async (req, res) => {
     
     // Insert transaction data into the database
     await db.query(
-      "INSERT INTO transactions (customer_id, transaction_ref, company, price, discount, final_price, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO transactions (customer_id, transaction_ref, company, price, discount, final_price, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [customer_id, transaction_ref, company, price, discount, final_price, created_at]
     );
 
