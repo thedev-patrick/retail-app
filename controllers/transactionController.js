@@ -46,13 +46,11 @@ exports.verifyTransaction = async (req, res) => {
     }
 
     // Process verification
-    res
-      .status(200)
-      .json({
-        status: "200",
-        message: "Successfully verified",
-        ...customerData[0],
-      });
+    res.status(200).json({
+      status: "200",
+      message: "Successfully verified",
+      ...customerData[0],
+    });
   } catch (error) {
     console.error("Error verifying transaction:", error);
     res.status(500).json({ status: "error", message: "Internal server error" });
@@ -97,11 +95,22 @@ exports.createTransaction = async (req, res) => {
     const discount = 2; // Discount percentage
     const final_price = price * quantity * ((100 - discount) / 100);
     const created_at = new Date();
-    
+
     // Insert transaction data into the database
     await db.query(
-      "INSERT INTO transactions (customer_id, transaction_ref, company, price, discount, final_price, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [customer_id, transaction_ref, company, price, discount, final_price, created_at]
+      "INSERT INTO transactions (customer_id, transaction_ref, company, price, product, state, lga, discount, final_price, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        customer_id,
+        transaction_ref,
+        company,
+        price,
+        product,
+        state,
+        lga,
+        discount,
+        final_price,
+        created_at,
+      ]
     );
 
     res.status(200).json({ status: "200", transaction_ref, ...req.body });
@@ -134,12 +143,10 @@ exports.generateQRCode = async (req, res) => {
     );
 
     if (!customerData.length || !transactionData.length) {
-      return res
-        .status(404)
-        .json({
-          status: "error",
-          message: "Customer or transaction not found",
-        });
+      return res.status(404).json({
+        status: "error",
+        message: "Customer or transaction not found",
+      });
     }
 
     const transactionDetails = {
