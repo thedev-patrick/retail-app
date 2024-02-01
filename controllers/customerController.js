@@ -17,6 +17,9 @@ exports.createCustomer = async (req, res) => {
   }
 
   // Additional checks if needed, e.g., format, length, uniqueness, etc.
+   function generateRandomNumber(min, max) {
+     return Math.floor(Math.random() * (max - min + 1)) + min;
+   }
 
   // Generate customer_id, customer_name, and created_at
   const customer_id = `R${generateRandomNumber(100000, 999999)}`;
